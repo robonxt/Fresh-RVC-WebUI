@@ -1658,7 +1658,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                             value="E:\codes\py39\\test-20230416b\\todo-songs",
                         )
                         inputs = gr.File(
-                            file_count="multiple", label=i18n("也可批量输入音频文件, 二选一, 优先读文件夹")
+                            file_count="multiple", label=i18n("也可批量拖拽音频文件, 二选一, 优先读文件夹，文件夹留空则读取拖拽文件")
                         )
                     with gr.Row():
                         format1 = gr.Radio(
@@ -1710,7 +1710,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                             value="E:\\codes\\py39\\test-20230416b\\todo-songs\\todo-songs",
                         )
                         wav_inputs = gr.File(
-                            file_count="multiple", label=i18n("也可批量输入音频文件, 二选一, 优先读文件夹")
+                            file_count="multiple", label=i18n("也可批量拖拽音频文件, 二选一, 优先读文件夹，文件夹留空则读取拖拽文件")
                         )
                     with gr.Column():
                         model_choose = gr.Dropdown(label=i18n("模型"), choices=uvr5_names)
