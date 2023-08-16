@@ -9,18 +9,31 @@ with gr.Blocks(title="RVC WebUI") as app:
     with gr.Tabs():
         with gr.TabItem(("模型推理")):
             with gr.Row():
-                sid0 = gr.Dropdown(label=("推理音色"), choices=sorted("a,b,c"))
-                refresh_button = gr.Button(("刷新音色列表和索引路径"), variant="primary")
-                clean_button = gr.Button(("卸载音色省显存"), variant="primary")
-                spk_item = gr.Slider(
-                    minimum=0,
-                    maximum=2333,
-                    step=1,
-                    label=("请选择说话人id"),
-                    value=0,
-                    visible=True,   # make it visible always, but
-                    interactive=False  # lock the interactive
-                )
+                #with gr.Column():
+                    sid0 = gr.Dropdown(
+                        label=("推理音色"),
+                        choices=sorted("a,b,c"),
+                    )
+                #with gr.Column():
+                    refresh_button = gr.Button(
+                        ("刷新音色列表和索引路径"),
+                        variant="primary",
+                    )
+                #with gr.Column():
+                    clean_button = gr.Button(
+                        ("卸载音色省显存"),
+                        variant="primary",
+                    )
+                #with gr.Column():
+                    spk_item = gr.Slider(
+                        minimum=0,
+                        maximum=2333,
+                        step=1,
+                        label=("请选择说话人id"),
+                        value=0,
+                        visible=True,   # make it visible always, but
+                        interactive=False,  # lock the interactive
+                    )
             with gr.Row():
                 with gr.Column():
                     with gr.Group() as tab1SingleAudioInput:
@@ -61,7 +74,6 @@ with gr.Blocks(title="RVC WebUI") as app:
                             gr.Markdown("检索特征占比")
 
                 with gr.Column():
-
                     with gr.Group() as tab1SingleTransposing:
                         vc_transform0 = gr.Number(
                             label="Transpose",
@@ -73,7 +85,6 @@ with gr.Blocks(title="RVC WebUI") as app:
                         ):
                             gr.Markdown("变调(整数, 半音数量, 升八度12降八度-12)")
                             gr.Markdown(value=("男转女推荐+12key, 女转男推荐-12key, 如果音域爆炸导致音色失真也可以自己调整到合适音域. "))
-
                     with gr.Group() as tab1SingleSampling:
                         resample_sr0 = gr.Slider(
                             minimum=0,
@@ -119,7 +130,6 @@ with gr.Blocks(title="RVC WebUI") as app:
                             open=False
                         ):
                             gr.Markdown("选择音高提取算法,输入歌声可用pm提速,harvest低音好但巨慢无比,crepe效果好但吃GPU,rmvpe效果最好且微吃GPU")
-
                     with gr.Group() as tab1SingleFilterRadius:
                             filter_radius0 = gr.Slider(
                                 minimum=0,
@@ -134,7 +144,6 @@ with gr.Blocks(title="RVC WebUI") as app:
                                 open=False
                             ):
                                 gr.Markdown("If >=3则使用对harvest音高识别的结果使用中值滤波，数值为滤波半径，使用可以削弱哑音")
-
                     with gr.Accordion(label="F0 file (Optional)", open=False), gr.Group() as tab1SingleOptionalF0File:
                         f0_file = gr.File()
                         with gr.Accordion( # change extension UI to use accordion (opened by default) for non-invasive usability.
@@ -143,12 +152,14 @@ with gr.Blocks(title="RVC WebUI") as app:
                             ):
                                 gr.Markdown("F0曲线文件, 可选, 一行一个音高, 代替默认F0及升降调")
 
-                #with gr.Column() as tab1SingleConvert:
-                but0 = gr.Button(
-                    value="Convert",
-                    variant="primary",
-                    interactive=True
-                )
+                #with gr.Column():
+                with gr.Row() as tab1SingleConvert:
+                        but0 = gr.Button(
+                            value="Convert",
+                            variant="primary",
+                            interactive=True
+                        )
+
             with gr.Column(), gr.Group() as tab1SingleAudioOutput:
                 vc_output2 = gr.Audio(label=("输出音频(右下角三个点,点了可以下载)"), interactive=False)
                 vc_output1 = gr.Textbox(label=("输出信息"), value="Ready", interactive=False)
@@ -236,6 +247,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                         inputs = gr.File(
                             file_count="multiple", label=("也可批量拖拽音频文件, 二选一, 优先读文件夹，文件夹留空则读取拖拽文件")
                         )
+
             with gr.Group(), gr.Accordion(
                     label="Audio Output Format",
                     open=True
@@ -582,7 +594,7 @@ with gr.Blocks(title="RVC WebUI") as app:
 
     app.queue(concurrency_count=511, max_size=1022).launch(
         server_name="0.0.0.0",
-        server_port=7897,
+        server_port=7898,
         quiet=True,
     )
 
