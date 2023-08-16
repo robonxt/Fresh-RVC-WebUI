@@ -1653,6 +1653,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                             file_index3 = gr.Textbox(
                                 label=i18n("Select Index (Direct Path)"),
                                 value="",
+                                placeholder="\"D:\\path\\to\\RVC\\logs\\TEST.index\"",
                                 interactive=True,
                             )
                             file_index4 = gr.Dropdown(
