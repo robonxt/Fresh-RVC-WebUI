@@ -46,6 +46,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                             open=False
                         ):
                             gr.Markdown("输入待处理音频文件路径(默认是正确格式示例)")
+
                     with gr.Group() as tab1SingleIndex:
                         file_index1 = gr.Textbox(
                             label="Select Index (Direct Path)",
@@ -85,6 +86,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                         ):
                             gr.Markdown("变调(整数, 半音数量, 升八度12降八度-12)")
                             gr.Markdown(value=("男转女推荐+12key, 女转男推荐-12key, 如果音域爆炸导致音色失真也可以自己调整到合适音域. "))
+
                     with gr.Group() as tab1SingleSampling:
                         resample_sr0 = gr.Slider(
                             minimum=0,
@@ -130,6 +132,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                             open=False
                         ):
                             gr.Markdown("选择音高提取算法,输入歌声可用pm提速,harvest低音好但巨慢无比,crepe效果好但吃GPU,rmvpe效果最好且微吃GPU")
+
                     with gr.Group() as tab1SingleFilterRadius:
                             filter_radius0 = gr.Slider(
                                 minimum=0,
@@ -144,6 +147,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                                 open=False
                             ):
                                 gr.Markdown("If >=3则使用对harvest音高识别的结果使用中值滤波，数值为滤波半径，使用可以削弱哑音")
+
                     with gr.Accordion(label="F0 file (Optional)", open=False), gr.Group() as tab1SingleOptionalF0File:
                         f0_file = gr.File()
                         with gr.Accordion( # change extension UI to use accordion (opened by default) for non-invasive usability.
@@ -152,7 +156,6 @@ with gr.Blocks(title="RVC WebUI") as app:
                             ):
                                 gr.Markdown("F0曲线文件, 可选, 一行一个音高, 代替默认F0及升降调")
 
-                #with gr.Column():
                 with gr.Row() as tab1SingleConvert:
                         but0 = gr.Button(
                             value="Convert",
