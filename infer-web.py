@@ -1484,7 +1484,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                                 placeholder="\"D:\\path\\to\\RVC\\todo-songs\\TEST.wav\""
                             )
                             with gr.Accordion(
-                                label=i18n("Learn more"),
+                                label=i18n("Learn More"),
                                 open=False
                             ):
                                 gr.Markdown(i18n("输入待处理音频文件路径(默认是正确格式示例)"))
@@ -1509,7 +1509,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                                 interactive=True,
                             )
                             with gr.Accordion(
-                                label=i18n("Learn more"),
+                                label=i18n("Learn More"),
                                 open=False
                             ):
                                 gr.Markdown(i18n("特征检索库文件路径,为空则使用下拉的选择结果"))
@@ -1530,7 +1530,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                                 value=0
                             )
                             with gr.Accordion(
-                                label="Learn more",
+                                label="Learn More",
                                 open=False
                             ):
                                 gr.Markdown(i18n("变调(整数, 半音数量, 升八度12降八度-12)"))
@@ -1561,7 +1561,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                                 interactive=True,
                             )
                             with gr.Accordion(
-                                label=i18n("Learn more"),
+                                label=i18n("Learn More"),
                                 open=False
                             ):
                                 gr.Markdown(i18n("后处理重采样至最终采样率，0为不进行重采样"))
@@ -1579,7 +1579,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                                 interactive=True,
                             )
                             with gr.Accordion(
-                                label=i18n("Learn more"),
+                                label=i18n("Learn More"),
                                 open=False
                             ):
                                 gr.Markdown(i18n("选择音高提取算法,输入歌声可用pm提速,harvest低音好但巨慢无比,crepe效果好但吃GPU,rmvpe效果最好且微吃GPU"))
@@ -1594,7 +1594,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                                 interactive=True,
                             )
                             with gr.Accordion(
-                                label=i18n("Learn more"),
+                                label=i18n("Learn More"),
                                 open=False
                             ):
                                 gr.Markdown(i18n(">=3则使用对harvest音高识别的结果使用中值滤波，数值为滤波半径，使用可以削弱哑音"))
@@ -1602,7 +1602,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                         with gr.Accordion(label=i18n("F0 file (Optional)"), open=False), gr.Group() as tab1SingleOptionalF0File:
                             f0_file = gr.File()
                             with gr.Accordion(
-                                label=i18n("Learn more"),
+                                label=i18n("Learn More"),
                                 open=False
                             ):
                                 gr.Markdown(i18n("F0曲线文件, 可选, 一行一个音高, 代替默认F0及升降调"))
@@ -1669,7 +1669,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                                 interactive=True,
                             )
                             with gr.Accordion(
-                                label=i18n("Learn more"),
+                                label=i18n("Learn More"),
                                 open=False
                             ):
                                 gr.Markdown(i18n("特征检索库文件路径,为空则使用下拉的选择结果"))
@@ -1689,7 +1689,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                                 label=i18n("Transpose (Pitch)"), value=0
                             )
                             with gr.Accordion(
-                                label="Learn more",
+                                label="Learn More",
                                 open=False
                             ):
                                 gr.Markdown(i18n("变调(整数, 半音数量, 升八度12降八度-12)"))
@@ -1720,7 +1720,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                                 interactive=True,
                             )
                             with gr.Accordion(
-                                label=i18n("Learn more"),
+                                label=i18n("Learn More"),
                                 open=False
                             ):
                                 gr.Markdown(i18n("后处理重采样至最终采样率，0为不进行重采样"))
@@ -1738,7 +1738,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                                 interactive=True,
                             )
                             with gr.Accordion(
-                                label=i18n("Learn more"),
+                                label=i18n("Learn More"),
                                 open=False
                             ):
                                 gr.Markdown(i18n("选择音高提取算法,输入歌声可用pm提速,harvest低音好但巨慢无比,crepe效果好但吃GPU,rmvpe效果最好且微吃GPU"))
@@ -1753,7 +1753,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                                 interactive=True,
                             )
                             with gr.Accordion(
-                                label=i18n("Learn more"),
+                                label=i18n("Learn More"),
                                 open=False
                             ):
                                 gr.Markdown(i18n(">=3则使用对harvest音高识别的结果使用中值滤波，数值为滤波半径，使用可以削弱哑音"))
@@ -1767,7 +1767,10 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                             )
 
                     with gr.Row() as tab1BatchConvert:
-                        but1 = gr.Button(i18n("转换"), variant="primary")
+                        but1 = gr.Button(
+                            i18n("转换"),
+                            variant="primary"
+                        )
 
                 with gr.Column(), gr.Group() as tab1BatchAudioOutput:
                     vc_output3 = gr.Textbox(
@@ -1854,23 +1857,33 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
 
         tab_vocalmix = i18n("伴奏人声分离&去混响&去回声")
         with gr.TabItem(tab_vocalmix):
-            with gr.Group():
+            with gr.Accordion(label=i18n("Learn More")):
                 gr.Markdown(
                     value=i18n(
                         "人声伴奏分离批量处理， 使用UVR5模型。 <br>合格的文件夹路径格式举例： E:\\codes\\py39\\vits_vc_gpu\\白鹭霜华测试样例(去文件管理器地址栏拷就行了)。 <br>模型分为三类： <br>1、保留人声：不带和声的音频选这个，对主人声保留比HP5更好。内置HP2和HP3两个模型，HP3可能轻微漏伴奏但对主人声保留比HP2稍微好一丁点； <br>2、仅保留主人声：带和声的音频选这个，对主人声可能有削弱。内置HP5一个模型； <br> 3、去混响、去延迟模型（by FoxJoy）：<br>  (1)MDX-Net(onnx_dereverb):对于双通道混响是最好的选择，不能去除单通道混响；<br>&emsp;(234)DeEcho:去除延迟效果。Aggressive比Normal去除得更彻底，DeReverb额外去除混响，可去除单声道混响，但是对高频重的板式混响去不干净。<br>去混响/去延迟，附：<br>1、DeEcho-DeReverb模型的耗时是另外2个DeEcho模型的接近2倍；<br>2、MDX-Net-Dereverb模型挺慢的；<br>3、个人推荐的最干净的配置是先MDX-Net再DeEcho-Aggressive。"
                     )
                 )
-                with gr.Row():
-                    with gr.Column():
+
+            with gr.Row():
+                with gr.Column():
+                    with gr.Group() as tab2AudioFileInput:
                         dir_wav_input = gr.Textbox(
                             label=i18n("输入待处理音频文件夹路径"),
-                            value="E:\\codes\\py39\\test-20230416b\\todo-songs\\todo-songs",
+                            placeholder="\"D:\\path\\to\\RVC\\todo-songs\""
                         )
                         wav_inputs = gr.File(
                             file_count="multiple", label=i18n("也可批量拖拽音频文件, 二选一, 优先读文件夹，文件夹留空则读取拖拽文件")
                         )
-                    with gr.Column():
-                        model_choose = gr.Dropdown(label=i18n("模型"), choices=uvr5_names)
+
+                with gr.Column():
+                    with gr.Group() as tab2ModelSelection:
+
+                        model_choose = gr.Dropdown(
+                            label=i18n("模型"),
+                            choices=uvr5_names
+                        )
+
+                    # with gr.Group() as tab2HiddenOption:
                         agg = gr.Slider(
                             minimum=0,
                             maximum=20,
@@ -1880,11 +1893,17 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                             interactive=True,
                             visible=False,  # 先不开放调整
                         )
+
+                    with gr.Group() as tab2FileOutputs:
                         opt_vocal_root = gr.Textbox(
-                            label=i18n("指定输出主人声文件夹"), value="opt"
+                            label=i18n("指定输出主人声文件夹"),
+                            value="opt",
+                            placeholder="opt"
                         )
                         opt_ins_root = gr.Textbox(
-                            label=i18n("指定输出非主人声文件夹"), value="opt"
+                            label=i18n("指定输出非主人声文件夹"),
+                            value="opt",
+                            placeholder="opt"
                         )
                         format0 = gr.Radio(
                             label=i18n("导出文件格式"),
@@ -1892,22 +1911,33 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                             value="flac",
                             interactive=True,
                         )
-                    but2 = gr.Button(i18n("转换"), variant="primary")
-                    vc_output4 = gr.Textbox(label=i18n("输出信息"))
-                    but2.click(
-                        uvr,
-                        [
-                            model_choose,
-                            dir_wav_input,
-                            opt_vocal_root,
-                            wav_inputs,
-                            opt_ins_root,
-                            agg,
-                            format0,
-                        ],
-                        [vc_output4],
-                        api_name="uvr_convert",
+
+                with gr.Row() as tab2Convert:
+                    but2 = gr.Button(
+                        i18n("转换"),
+                        variant="primary"
                     )
+
+            with gr.Column(), gr.Group() as tab2AudioOutput:
+                vc_output4 = gr.Textbox(
+                    label=i18n("输出信息"),
+                    value="Ready",
+                )
+
+            but2.click(
+                uvr,
+                [
+                    model_choose,
+                    dir_wav_input,
+                    opt_vocal_root,
+                    wav_inputs,
+                    opt_ins_root,
+                    agg,
+                    format0,
+                ],
+                [vc_output4],
+                api_name="uvr_convert",
+            )
 
         tab_train = i18n("训练")
         with gr.TabItem(tab_train):
