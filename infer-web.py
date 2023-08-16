@@ -1433,29 +1433,35 @@ def export_onnx(ModelPath, ExportedPath):
 
 
 with gr.Blocks(title="RVC WebUI") as app:
-    gr.Markdown(
-        value=i18n(
-            "本软件以MIT协议开源, 作者不对软件具备任何控制力, 使用软件者、传播软件导出的声音者自负全责. <br>如不认可该条款, 则不能使用或引用软件包内任何代码和文件. 详见根目录<b>LICENSE</b>."
+    with gr.Group() as LICENSE_TEXT:
+        gr.Markdown(
+            value=i18n(
+                "本软件以MIT协议开源, 作者不对软件具备任何控制力, 使用软件者、传播软件导出的声音者自负全责. <br>如不认可该条款, 则不能使用或引用软件包内任何代码和文件. 详见根目录<b>LICENSE</b>."
+            )
         )
-    )
     with gr.Tabs():
-        with gr.TabItem(i18n("模型推理")):
+        tab_modelInference = i18n("模型推理")
+        with gr.TabItem(tab_modelInference):
             with gr.Row():
-                sid0 = gr.Dropdown(label=i18n("推理音色"), choices=sorted(names))
-                refresh_button = gr.Button(i18n("刷新音色列表和索引路径"), variant="primary")
-                clean_button = gr.Button(i18n("卸载音色省显存"), variant="primary")
-                spk_item = gr.Slider(
-                    minimum=0,
-                    maximum=2333,
-                    step=1,
-                    label=i18n("请选择说话人id"),
-                    value=0,
-                    visible=False,
-                    interactive=True,
-                )
-                clean_button.click(
-                    fn=clean, inputs=[], outputs=[sid0], api_name="infer_clean"
-                )
+                #with gr.Column():
+                    sid0 = gr.Dropdown(label=i18n("推理音色"), choices=sorted(names))
+                #with gr.Column():
+                    refresh_button = gr.Button(i18n("刷新音色列表和索引路径"), variant="primary")
+                #with gr.Column():
+                    clean_button = gr.Button(i18n("卸载音色省显存"), variant="primary")
+                #with gr.Column():
+                    spk_item = gr.Slider(
+                        minimum=0,
+                        maximum=2333,
+                        step=1,
+                        label=i18n("请选择说话人id"),
+                        value=0,
+                        visible=False,
+                        interactive=True,
+                    )
+                    clean_button.click(
+                        fn=clean, inputs=[], outputs=[sid0], api_name="infer_clean"
+                    )
             with gr.Group():
                 gr.Markdown(
                     value=i18n("男转女推荐+12key, 女转男推荐-12key, 如果音域爆炸导致音色失真也可以自己调整到合适音域. ")
@@ -1694,7 +1700,9 @@ with gr.Blocks(title="RVC WebUI") as app:
                 inputs=[sid0, protect0, protect1],
                 outputs=[spk_item, protect0, protect1, file_index2, file_index4],
             )
-        with gr.TabItem(i18n("伴奏人声分离&去混响&去回声")):
+
+        tab_vocalmix = i18n("伴奏人声分离&去混响&去回声")
+        with gr.TabItem(tab_vocalmix):
             with gr.Group():
                 gr.Markdown(
                     value=i18n(
@@ -1749,7 +1757,9 @@ with gr.Blocks(title="RVC WebUI") as app:
                         [vc_output4],
                         api_name="uvr_convert",
                     )
-        with gr.TabItem(i18n("训练")):
+
+        tab_train = i18n("训练")
+        with gr.TabItem(tab_train):
             gr.Markdown(
                 value=i18n(
                     "step1: 填写实验配置. 实验数据放在logs下, 每个实验一个文件夹, 需手工输入实验名路径, 内含实验配置, 日志, 训练得到的模型文件. "
@@ -1991,7 +2001,8 @@ with gr.Blocks(title="RVC WebUI") as app:
                         api_name="train_start_all",
                     )
 
-        with gr.TabItem(i18n("ckpt处理")):
+        tab_ckpt = i18n("ckpt处理")
+        with gr.TabItem(tab_ckpt):
             with gr.Group():
                 gr.Markdown(value=i18n("模型融合, 可用于测试音色融合"))
                 with gr.Row():
@@ -2131,7 +2142,8 @@ with gr.Blocks(title="RVC WebUI") as app:
                     api_name="ckpt_extract",
                 )
 
-        with gr.TabItem(i18n("Onnx导出")):
+        tab_onnx = i18n("Onnx导出")
+        with gr.TabItem(tab_onnx):
             with gr.Row():
                 ckpt_dir = gr.Textbox(label=i18n("RVC模型路径"), value="", interactive=True)
             with gr.Row():
