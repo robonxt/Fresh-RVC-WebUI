@@ -1646,7 +1646,8 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                         with gr.Group() as tab1BatchAudioOutput:
                             opt_input = gr.Textbox(
                                 label=i18n("指定输出文件夹"),
-                                value="opt"
+                                value="opt",
+                                placeholder="opt"
                             )
 
                         with gr.Group() as tab1BatchIndex:
