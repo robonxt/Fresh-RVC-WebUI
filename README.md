@@ -6,4 +6,4 @@
 - "Learn More" textboxes
 - English Translations fixed (hopefully)
 
-![FreshRVCWebUI](https://github.com/robonxt/Fresh-RVC-WebUI/assets/8854735/60980c74-50e8-43f1-806e-b614014e2bed)
+![FreshRVCWebUI](https://github.com/robonxt/Fresh-RVC-WebUI/assets/8854735/cdd4e81c-3c29-4e29-a67a-dbfe807fe352)
