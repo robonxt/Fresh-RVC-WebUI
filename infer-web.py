@@ -1478,7 +1478,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                         api_name="infer_clean"
                     )
 
-            with gr.Accordion(label=i18n("Single File Conversion")):
+            with gr.Accordion(label=i18n("Single File Conversion"), open=False):
                 with gr.Row():
                     with gr.Column():
                         with gr.Group() as tab1SingleAudioInput:
@@ -1628,7 +1628,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                         interactive=False
                     )
 
-            with gr.Accordion(label=i18n("Batch File Conversion")):
+            with gr.Accordion(label=i18n("Batch File Conversion"), open=False):
                 gr.Markdown(i18n("批量转换, 输入待转换音频文件夹, 或上传多个音频文件, 在指定文件夹(默认opt)下输出转换的音频. "))
                 with gr.Row():
                     with gr.Column():
@@ -1861,7 +1861,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
 
         tab_vocalmix = i18n("伴奏人声分离&去混响&去回声")
         with gr.TabItem(tab_vocalmix):
-            with gr.Accordion(label=i18n("Learn More")):
+            with gr.Accordion(label=i18n("Learn More"), open=False):
                 gr.Markdown(
                     value=i18n(
                         "人声伴奏分离批量处理， 使用UVR5模型。 <br>合格的文件夹路径格式举例： E:\\codes\\py39\\vits_vc_gpu\\白鹭霜华测试样例(去文件管理器地址栏拷就行了)。 <br>模型分为三类： <br>1、保留人声：不带和声的音频选这个，对主人声保留比HP5更好。内置HP2和HP3两个模型，HP3可能轻微漏伴奏但对主人声保留比HP2稍微好一丁点； <br>2、仅保留主人声：带和声的音频选这个，对主人声可能有削弱。内置HP5一个模型； <br> 3、去混响、去延迟模型（by FoxJoy）：<br>  (1)MDX-Net(onnx_dereverb):对于双通道混响是最好的选择，不能去除单通道混响；<br>&emsp;(234)DeEcho:去除延迟效果。Aggressive比Normal去除得更彻底，DeReverb额外去除混响，可去除单声道混响，但是对高频重的板式混响去不干净。<br>去混响/去延迟，附：<br>1、DeEcho-DeReverb模型的耗时是另外2个DeEcho模型的接近2倍；<br>2、MDX-Net-Dereverb模型挺慢的；<br>3、个人推荐的最干净的配置是先MDX-Net再DeEcho-Aggressive。"
