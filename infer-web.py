@@ -1,42 +1,34 @@
-import os
-import shutil
-import sys
+import os, sys
 
 now_dir = os.getcwd()
 sys.path.append(now_dir)
-import traceback, pdb
-import warnings
-
-import numpy as np
-import torch
-
-os.environ["OPENBLAS_NUM_THREADS"] = "1"
-os.environ["no_proxy"] = "localhost, 127.0.0.1, ::1"
 import logging
+import shutil
 import threading
+import traceback
+import warnings
 from random import shuffle
 from subprocess import Popen
 from time import sleep
 
-import faiss
-import ffmpeg
-import gradio as gr
-import soundfile as sf
-from config import defaultconfig as config
 import fairseq
-from i18n import I18nAuto
-from lib.infer_pack.models import (
-    SynthesizerTrnMs256NSFsid,
-    SynthesizerTrnMs256NSFsid_nono,
-    SynthesizerTrnMs768NSFsid,
-    SynthesizerTrnMs768NSFsid_nono,
-)
-from lib.infer_pack.models_onnx import SynthesizerTrnMsNSFsidM
-from infer_uvr5 import _audio_pre_, _audio_pre_new
-from lib.audio import load_audio
-from lib.train.process_ckpt import change_info, extract_small_model, merge, show_info
-from lib.train.vc_infer_pipeline import VC
+import faiss
+import gradio as gr
+import numpy as np
+import torch
+from dotenv import load_dotenv
 from sklearn.cluster import MiniBatchKMeans
+
+from configs.config import Config
+from i18n.i18n import I18nAuto
+from infer.lib.train.process_ckpt import (
+    change_info,
+    extract_small_model,
+    merge,
+    show_info,
+)
+from infer.modules.uvr5.modules import uvr
+from infer.modules.vc.modules import VC
 
 logging.getLogger("numba").setLevel(logging.WARNING)
 
