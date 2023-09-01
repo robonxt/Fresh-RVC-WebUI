@@ -1820,7 +1820,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                 api_name="infer_refresh_batch",
             )
             but0.click(
-                vc_single,
+                vc.vc_single,
                 [
                     spk_item,
                     input_audio0,
@@ -1840,7 +1840,7 @@ with gr.Blocks(title="Fresh RVC WebUI") as app:
                 api_name="infer_convert",
             )
             but1.click(
-                vc_multi,
+                vc.vc_multi,
                 [
                     spk_item,
                     dir_input,
