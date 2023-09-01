@@ -1,12 +1,17 @@
-import os, sys, pdb
+import os
+import logging
+import sys
 
 os.environ["OMP_NUM_THREADS"] = "2"
+os.environ["rmvpe_root"] = "assets/rmvpe"
 if sys.platform == "darwin":
     os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 now_dir = os.getcwd()
 sys.path.append(now_dir)
 import multiprocessing
+
+logger = logging.getLogger(__name__)
 
 
 class Harvest(multiprocessing.Process):
@@ -16,7 +21,8 @@ class Harvest(multiprocessing.Process):
         self.opt_q = opt_q
 
     def run(self):
-        import numpy as np, pyworld
+        import numpy as np
+        import pyworld
 
         while 1:
             idx, x, res_f0, n_cpu, ts = self.inp_q.get()
@@ -33,21 +39,26 @@ class Harvest(multiprocessing.Process):
 
 
 if __name__ == "__main__":
-    from multiprocessing import Queue
-    from queue import Empty
-    import numpy as np
-    import multiprocessing
-    import traceback, re
     import json
+    import multiprocessing
+    import re
+    import threading
+    import time
+    import traceback
+    from multiprocessing import Queue, cpu_count
+    from queue import Empty
+
+    import librosa
+    import noisereduce as nr
+    import numpy as np
     import PySimpleGUI as sg
     import sounddevice as sd
-    import noisereduce as nr
-    from multiprocessing import cpu_count
-    import librosa, torch, time, threading
+    import torch
     import torch.nn.functional as F
     import torchaudio.transforms as tat
-    from i18n import I18nAuto
-    import rvc_for_realtime
+
+    import tools.rvc_for_realtime as rvc_for_realtime
+    from i18n.i18n import I18nAuto
 
     i18n = I18nAuto()
     device = rvc_for_realtime.config.device
@@ -131,7 +142,9 @@ if __name__ == "__main__":
                                 ),
                                 sg.FileBrowse(
                                     i18n("选择.pth文件"),
-                                    initial_folder=os.path.join(os.getcwd(), "weights"),
+                                    initial_folder=os.path.join(
+                                        os.getcwd(), "assets/weights"
+                                    ),
                                     file_types=((". pth"),),
                                 ),
                             ],
@@ -184,6 +197,7 @@ if __name__ == "__main__":
                                     resolution=1,
                                     orientation="h",
                                     default_value=data.get("threhold", ""),
+                                    enable_events=True,
                                 ),
                             ],
                             [
@@ -194,6 +208,7 @@ if __name__ == "__main__":
                                     resolution=1,
                                     orientation="h",
                                     default_value=data.get("pitch", ""),
+                                    enable_events=True,
                                 ),
                             ],
                             [
@@ -204,6 +219,7 @@ if __name__ == "__main__":
                                     resolution=0.01,
                                     orientation="h",
                                     default_value=data.get("index_rate", ""),
+                                    enable_events=True,
                                 ),
                             ],
                             [
@@ -213,24 +229,28 @@ if __name__ == "__main__":
                                     "f0method",
                                     key="pm",
                                     default=data.get("pm", "") == True,
+                                    enable_events=True,
                                 ),
                                 sg.Radio(
                                     "harvest",
                                     "f0method",
                                     key="harvest",
                                     default=data.get("harvest", "") == True,
+                                    enable_events=True,
                                 ),
                                 sg.Radio(
                                     "crepe",
                                     "f0method",
                                     key="crepe",
                                     default=data.get("crepe", "") == True,
+                                    enable_events=True,
                                 ),
                                 sg.Radio(
                                     "rmvpe",
                                     "f0method",
                                     key="rmvpe",
                                     default=data.get("rmvpe", "") == True,
+                                    enable_events=True,
                                 ),
                             ],
                         ],
@@ -246,6 +266,7 @@ if __name__ == "__main__":
                                     resolution=0.03,
                                     orientation="h",
                                     default_value=data.get("block_time", ""),
+                                    enable_events=True,
                                 ),
                             ],
                             [
@@ -258,6 +279,7 @@ if __name__ == "__main__":
                                     default_value=data.get(
                                         "n_cpu", min(self.config.n_cpu, n_cpu)
                                     ),
+                                    enable_events=True,
                                 ),
                             ],
                             [
@@ -268,6 +290,7 @@ if __name__ == "__main__":
                                     resolution=0.01,
                                     orientation="h",
                                     default_value=data.get("crossfade_length", ""),
+                                    enable_events=True,
                                 ),
                             ],
                             [
@@ -278,11 +301,20 @@ if __name__ == "__main__":
                                     resolution=0.01,
                                     orientation="h",
                                     default_value=data.get("extra_time", ""),
+                                    enable_events=True,
                                 ),
                             ],
                             [
-                                sg.Checkbox(i18n("输入降噪"), key="I_noise_reduce"),
-                                sg.Checkbox(i18n("输出降噪"), key="O_noise_reduce"),
+                                sg.Checkbox(
+                                    i18n("输入降噪"),
+                                    key="I_noise_reduce",
+                                    enable_events=True,
+                                ),
+                                sg.Checkbox(
+                                    i18n("输出降噪"),
+                                    key="O_noise_reduce",
+                                    enable_events=True,
+                                ),
                             ],
                         ],
                         title=i18n("性能设置"),
@@ -295,7 +327,7 @@ if __name__ == "__main__":
                     sg.Text("0", key="infer_time"),
                 ],
             ]
-            self.window = sg.Window("RVC - GUI", layout=layout)
+            self.window = sg.Window("RVC - GUI", layout=layout, finalize=True)
             self.event_handler()
 
         def event_handler(self):
@@ -326,7 +358,7 @@ if __name__ == "__main__":
                     )
                 if event == "start_vc" and self.flag_vc == False:
                     if self.set_values(values) == True:
-                        print("using_cuda:" + str(torch.cuda.is_available()))
+                        logger.info("Use CUDA:" + str(torch.cuda.is_available()))
                         self.start_vc()
                         settings = {
                             "pth_path": values["pth_path"],
@@ -352,6 +384,27 @@ if __name__ == "__main__":
                         with open("configs/config.json", "w") as j:
                             json.dump(settings, j)
                 if event == "stop_vc" and self.flag_vc == True:
+                    self.flag_vc = False
+
+                # Parameter hot update
+                if event == "threhold":
+                    self.config.threhold = values["threhold"]
+                elif event == "pitch":
+                    self.config.pitch = values["pitch"]
+                    if hasattr(self, "rvc"):
+                        self.rvc.change_key(values["pitch"])
+                elif event == "index_rate":
+                    self.config.index_rate = values["index_rate"]
+                    if hasattr(self, "rvc"):
+                        self.rvc.change_index_rate(values["index_rate"])
+                elif event in ["pm", "harvest", "crepe", "rmvpe"]:
+                    self.config.f0method = event
+                elif event == "I_noise_reduce":
+                    self.config.I_noise_reduce = values["I_noise_reduce"]
+                elif event == "O_noise_reduce":
+                    self.config.O_noise_reduce = values["O_noise_reduce"]
+                elif event != "start_vc" and self.flag_vc == True:
+                    # Other parameters do not support hot update
                     self.flag_vc = False
 
         def set_values(self, values):
@@ -459,8 +512,19 @@ if __name__ == "__main__":
             self.sola_buffer: torch.Tensor = torch.zeros(
                 self.crossfade_frame, device=device, dtype=torch.float32
             )
-            self.fade_in_window: torch.Tensor = torch.linspace(
-                0.0, 1.0, steps=self.crossfade_frame, device=device, dtype=torch.float32
+            self.fade_in_window: torch.Tensor = (
+                torch.sin(
+                    0.5
+                    * np.pi
+                    * torch.linspace(
+                        0.0,
+                        1.0,
+                        steps=self.crossfade_frame,
+                        device=device,
+                        dtype=torch.float32,
+                    )
+                )
+                ** 2
             )
             self.fade_out_window: torch.Tensor = 1 - self.fade_in_window
             self.resampler = tat.Resample(
@@ -483,8 +547,8 @@ if __name__ == "__main__":
             ):
                 while self.flag_vc:
                     time.sleep(self.config.block_time)
-                    print("Audio block passed.")
-            print("ENDing VC")
+                    logger.debug("Audio block passed.")
+            logger.debug("ENDing VC")
 
         def audio_callback(
             self, indata: np.ndarray, outdata: np.ndarray, frames, times, status
@@ -561,7 +625,7 @@ if __name__ == "__main__":
                 sola_offset = sola_offset.item()
             else:
                 sola_offset = torch.argmax(cor_nom[0, 0] / cor_den[0, 0])
-            print("sola offset: " + str(int(sola_offset)))
+            logger.debug("sola_offset =" + str(int(sola_offset)))
             self.output_wav[:] = infer_wav[sola_offset : sola_offset + self.block_frame]
             self.output_wav[: self.crossfade_frame] *= self.fade_in_window
             self.output_wav[: self.crossfade_frame] += self.sola_buffer[:]
@@ -601,7 +665,7 @@ if __name__ == "__main__":
                     outdata[:] = self.output_wav[:].repeat(2, 1).t().cpu().numpy()
             total_time = time.perf_counter() - start_time
             self.window["infer_time"].update(int(total_time * 1000))
-            print("infer time:" + str(total_time))
+            logger.info("Infer time:" + str(total_time))
 
         def get_devices(self, update: bool = True):
             """获取设备列表"""
@@ -654,9 +718,9 @@ if __name__ == "__main__":
             sd.default.device[1] = output_device_indices[
                 output_devices.index(output_device)
             ]
-            print("input device:" + str(sd.default.device[0]) + ":" + str(input_device))
-            print(
-                "output device:" + str(sd.default.device[1]) + ":" + str(output_device)
+            logger.info("Input device:" + str(sd.default.device[0]) + ":" + str(input_device))
+            logger.info(
+                "Output device:" + str(sd.default.device[1]) + ":" + str(output_device)
             )
 
     gui = GUI()
