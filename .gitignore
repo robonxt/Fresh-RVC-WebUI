@@ -6,4 +6,4 @@ hubert_base.pt
 /logs
 .venv
 /runtime
-.pth
+*.pth
