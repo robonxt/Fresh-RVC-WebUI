@@ -10,6 +10,8 @@ import warnings
 from random import shuffle
 from subprocess import Popen
 from time import sleep
+import json
+import pathlib
 
 import fairseq
 import faiss
@@ -563,20 +565,21 @@ def if_done_multi(done, ps):
     done[0] = True
 
 
-def get_quoted_python_cmd():
-    return f'"{config.python_cmd}"'
-
-
 def preprocess_dataset(trainset_dir, exp_dir, sr, n_p):
     sr = sr_dict[sr]
     os.makedirs("%s/logs/%s" % (now_dir, exp_dir), exist_ok=True)
     f = open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "w")
     f.close()
-    cmd = (
-        get_quoted_python_cmd()
-        + ' trainset_preprocess_pipeline_print.py "%s" %s %s "%s/logs/%s" '
-        % (trainset_dir, sr, n_p, now_dir, exp_dir)
-        + str(config.noparallel)
+    per = 3.0 if config.is_half else 3.7
+    cmd = '"%s" infer/modules/train/preprocess.py "%s" %s %s "%s/logs/%s" %s %.1f' % (
+        config.python_cmd,
+        trainset_dir,
+        sr,
+        n_p,
+        now_dir,
+        exp_dir,
+        config.noparallel,
+        per,
     )
     print(cmd)
     p = Popen(cmd, shell=True)  # , stdin=PIPE, stdout=PIPE,stderr=PIPE,cwd=now_dir
@@ -610,9 +613,9 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
     if if_f0:
         if f0method != "rmvpe_gpu":
             cmd = (
-                get_quoted_python_cmd()
-                + ' extract_f0_print.py "%s/logs/%s" %s %s'
+                '"%s" infer/modules/train/extract/extract_f0_print.py "%s/logs/%s" %s %s'
                 % (
+                    config.python_cmd,
                     now_dir,
                     exp_dir,
                     n_p,
@@ -639,11 +642,18 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
                 ps = []
                 for idx, n_g in enumerate(gpus_rmvpe):
                     cmd = (
-                        get_quoted_python_cmd()
-                        + ' extract_f0_rmvpe.py %s %s %s "%s/logs/%s" %s '
-                        % (leng, idx, n_g, now_dir, exp_dir, config.is_half)
+                        '"%s" infer/modules/train/extract/extract_f0_rmvpe.py %s %s %s "%s/logs/%s" %s '
+                        % (
+                            config.python_cmd,
+                            leng,
+                            idx,
+                            n_g,
+                            now_dir,
+                            exp_dir,
+                            config.is_half,
+                        )
                     )
-                    print(cmd)
+                    logger.info(cmd)
                     p = Popen(
                         cmd, shell=True, cwd=now_dir
                     )  # , shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=now_dir
@@ -692,9 +702,9 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
     ps = []
     for idx, n_g in enumerate(gpus):
         cmd = (
-            get_quoted_python_cmd()
-            + ' extract_feature_print.py %s %s %s %s "%s/logs/%s" %s'
+            '"%s" infer/modules/train/extract_feature_print.py %s %s %s %s "%s/logs/%s" %s'
             % (
+                config.python_cmd,
                 config.device,
                 leng,
                 idx,
@@ -704,7 +714,7 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
                 version19,
             )
         )
-        print(cmd)
+        logger.info(cmd)
         p = Popen(
             cmd, shell=True, cwd=now_dir
         )  # , shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE, cwd=now_dir
@@ -730,9 +740,7 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
     yield log
 
 
-def change_sr2(sr2, if_f0_3, version19):
-    path_str = "" if version19 == "v1" else "_v2"
-    f0_str = "f0" if if_f0_3 else ""
+def get_pretrained_models(path_str, f0_str, sr2):
     if_pretrained_generator_exist = os.access(
         "pretrained%s/%sG%s.pth" % (path_str, f0_str, sr2), os.F_OK
     )
@@ -740,14 +748,18 @@ def change_sr2(sr2, if_f0_3, version19):
         "pretrained%s/%sD%s.pth" % (path_str, f0_str, sr2), os.F_OK
     )
     if not if_pretrained_generator_exist:
-        print(
-            "pretrained%s/%sG%s.pth" % (path_str, f0_str, sr2),
-            "not exist, will not use pretrained model",
+        logger.warning(
+            "assets/pretrained%s/%sG%s.pth not exist, will not use pretrained model",
+            path_str,
+            f0_str,
+            sr2,
         )
     if not if_pretrained_discriminator_exist:
-        print(
-            "pretrained%s/%sD%s.pth" % (path_str, f0_str, sr2),
-            "not exist, will not use pretrained model",
+        logger.warning(
+            "assets/pretrained%s/%sD%s.pth not exist, will not use pretrained model",
+            path_str,
+            f0_str,
+            sr2,
         )
     return (
         "pretrained%s/%sG%s.pth" % (path_str, f0_str, sr2)
@@ -757,6 +769,12 @@ def change_sr2(sr2, if_f0_3, version19):
         if if_pretrained_discriminator_exist
         else "",
     )
+
+
+def change_sr2(sr2, if_f0_3, version19):
+    path_str = "" if version19 == "v1" else "_v2"
+    f0_str = "f0" if if_f0_3 else ""
+    return get_pretrained_models(path_str, f0_str, sr2)
 
 
 def change_version19(sr2, if_f0_3, version19):
@@ -769,69 +787,17 @@ def change_version19(sr2, if_f0_3, version19):
         else {"choices": ["40k", "48k", "32k"], "__type__": "update", "value": sr2}
     )
     f0_str = "f0" if if_f0_3 else ""
-    if_pretrained_generator_exist = os.access(
-        "pretrained%s/%sG%s.pth" % (path_str, f0_str, sr2), os.F_OK
-    )
-    if_pretrained_discriminator_exist = os.access(
-        "pretrained%s/%sD%s.pth" % (path_str, f0_str, sr2), os.F_OK
-    )
-    if not if_pretrained_generator_exist:
-        print(
-            "pretrained%s/%sG%s.pth" % (path_str, f0_str, sr2),
-            "not exist, will not use pretrained model",
-        )
-    if not if_pretrained_discriminator_exist:
-        print(
-            "pretrained%s/%sD%s.pth" % (path_str, f0_str, sr2),
-            "not exist, will not use pretrained model",
-        )
     return (
-        "pretrained%s/%sG%s.pth" % (path_str, f0_str, sr2)
-        if if_pretrained_generator_exist
-        else "",
-        "pretrained%s/%sD%s.pth" % (path_str, f0_str, sr2)
-        if if_pretrained_discriminator_exist
-        else "",
+        *get_pretrained_models(path_str, f0_str, sr2),
         to_return_sr2,
     )
 
 
 def change_f0(if_f0_3, sr2, version19):  # f0method8,pretrained_G14,pretrained_D15
     path_str = "" if version19 == "v1" else "_v2"
-    if_pretrained_generator_exist = os.access(
-        "pretrained%s/f0G%s.pth" % (path_str, sr2), os.F_OK
-    )
-    if_pretrained_discriminator_exist = os.access(
-        "pretrained%s/f0D%s.pth" % (path_str, sr2), os.F_OK
-    )
-    if not if_pretrained_generator_exist:
-        print(
-            "pretrained%s/f0G%s.pth" % (path_str, sr2),
-            "not exist, will not use pretrained model",
-        )
-    if not if_pretrained_discriminator_exist:
-        print(
-            "pretrained%s/f0D%s.pth" % (path_str, sr2),
-            "not exist, will not use pretrained model",
-        )
-    if if_f0_3:
-        return (
-            {"visible": True, "__type__": "update"},
-            "pretrained%s/f0G%s.pth" % (path_str, sr2)
-            if if_pretrained_generator_exist
-            else "",
-            "pretrained%s/f0D%s.pth" % (path_str, sr2)
-            if if_pretrained_discriminator_exist
-            else "",
-        )
     return (
-        {"visible": False, "__type__": "update"},
-        ("pretrained%s/G%s.pth" % (path_str, sr2))
-        if if_pretrained_generator_exist
-        else "",
-        ("pretrained%s/D%s.pth" % (path_str, sr2))
-        if if_pretrained_discriminator_exist
-        else "",
+        {"visible": if_f0_3, "__type__": "update"},
+        *get_pretrained_models(path_str, "f0", sr2),
     )
 
 
@@ -921,32 +887,51 @@ def click_train(
     print("write filelist done")
     # 生成config#无需生成config
     # cmd = python_cmd + " train_nsf_sim_cache_sid_load_pretrain.py -e mi-test -sr 40k -f0 1 -bs 4 -g 0 -te 10 -se 5 -pg pretrained/f0G40k.pth -pd pretrained/f0D40k.pth -l 1 -c 0"
-    print("use gpus:", gpus16)
+    logger.info("Use gpus: %s", str(gpus16))
     if pretrained_G14 == "":
         print("no pretrained Generator")
     if pretrained_D15 == "":
-        print("no pretrained Discriminator")
+        logger.info("No pretrained Discriminator")
+    if version19 == "v1" or sr2 == "40k":
+        config_path = "v1/%s.json" % sr2
+    else:
+        config_path = "v2/%s.json" % sr2
+    config_save_path = os.path.join(exp_dir, "config.json")
+    if not pathlib.Path(config_save_path).exists():
+        with open(config_save_path, "w", encoding="utf-8") as f:
+            json.dump(
+                config.json_config[config_path],
+                f,
+                ensure_ascii=False,
+                indent=4,
+                sort_keys=True,
+            )
+            f.write("\n")
     if gpus16:
-        cmd = get_quoted_python_cmd() + ' train_nsf_sim_cache_sid_load_pretrain.py -e "%s" -sr %s -f0 %s -bs %s -g %s -te %s -se %s %s %s -l %s -c %s -sw %s -v %s' % (
-            exp_dir1,
-            sr2,
-            1 if if_f0_3 else 0,
-            batch_size12,
-            gpus16,
-            total_epoch11,
-            save_epoch10,
-            "-pg %s" % pretrained_G14 if pretrained_G14 != "" else "",
-            "-pd %s" % pretrained_D15 if pretrained_D15 != "" else "",
-            1 if if_save_latest13 == i18n("是") else 0,
-            1 if if_cache_gpu17 == i18n("是") else 0,
-            1 if if_save_every_weights18 == i18n("是") else 0,
-            version19,
+        cmd = (
+            '"%s" infer/modules/train/train.py -e "%s" -sr %s -f0 %s -bs %s -g %s -te %s -se %s %s %s -l %s -c %s -sw %s -v %s'
+            % (
+                config.python_cmd,
+                exp_dir1,
+                sr2,
+                1 if if_f0_3 else 0,
+                batch_size12,
+                gpus16,
+                total_epoch11,
+                save_epoch10,
+                "-pg %s" % pretrained_G14 if pretrained_G14 != "" else "",
+                "-pd %s" % pretrained_D15 if pretrained_D15 != "" else "",
+                1 if if_save_latest13 == i18n("是") else 0,
+                1 if if_cache_gpu17 == i18n("是") else 0,
+                1 if if_save_every_weights18 == i18n("是") else 0,
+                version19,
+            )
         )
     else:
         cmd = (
-            config.python_cmd
-            + ' train_nsf_sim_cache_sid_load_pretrain.py -e "%s" -sr %s -f0 %s -bs %s -te %s -se %s %s %s -l %s -c %s -sw %s -v %s'
+            '"%s" infer/modules/train/train.py -e "%s" -sr %s -f0 %s -bs %s -te %s -se %s %s %s -l %s -c %s -sw %s -v %s'
             % (
+                config.python_cmd,
                 exp_dir1,
                 sr2,
                 1 if if_f0_3 else 0,

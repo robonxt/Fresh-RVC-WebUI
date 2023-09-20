@@ -5,7 +5,7 @@ import logging
 import os
 import subprocess
 import sys
-import traceback
+import shutil
 
 import numpy as np
 import torch
@@ -33,14 +33,16 @@ def load_checkpoint_d(checkpoint_path, combd, sbd, optimizer=None, load_opt=1):
             try:
                 new_state_dict[k] = saved_state_dict[k]
                 if saved_state_dict[k].shape != state_dict[k].shape:
-                    logger.warn(
-                        "shape-%s-mismatch. need: %s, get: %s"
-                        % (k, state_dict[k].shape, saved_state_dict[k].shape)
+                    logger.warning(
+                        "shape-%s-mismatch. need: %s, get: %s",
+                        k,
+                        state_dict[k].shape,
+                        saved_state_dict[k].shape,
                     )  #
                     raise KeyError
             except:
                 # logger.info(traceback.format_exc())
-                logger.info("%s is not in the checkpoint" % k)  # pretrain缺失的
+                logger.info("%s is not in the checkpoint", k)  # pretrain缺失的
                 new_state_dict[k] = v  # 模型自带的随机值
         if hasattr(model, "module"):
             model.module.load_state_dict(new_state_dict, strict=False)
@@ -109,14 +111,16 @@ def load_checkpoint(checkpoint_path, model, optimizer=None, load_opt=1):
         try:
             new_state_dict[k] = saved_state_dict[k]
             if saved_state_dict[k].shape != state_dict[k].shape:
-                logger.warn(
-                    "shape-%s-mismatch|need-%s|get-%s"
-                    % (k, state_dict[k].shape, saved_state_dict[k].shape)
+                logger.warning(
+                    "shape-%s-mismatch|need-%s|get-%s",
+                    k,
+                    state_dict[k].shape,
+                    saved_state_dict[k].shape,
                 )  #
                 raise KeyError
         except:
             # logger.info(traceback.format_exc())
-            logger.info("%s is not in the checkpoint" % k)  # pretrain缺失的
+            logger.info("%s is not in the checkpoint", k)  # pretrain缺失的
             new_state_dict[k] = v  # 模型自带的随机值
     if hasattr(model, "module"):
         model.module.load_state_dict(new_state_dict, strict=False)
@@ -297,7 +301,6 @@ def get_hparams(init=True):
       -c不要了
     """
     parser = argparse.ArgumentParser()
-    # parser.add_argument('-c', '--config', type=str, default="configs/40k.json",help='JSON file for configuration')
     parser.add_argument(
         "-se",
         "--save_every_epoch",
@@ -360,23 +363,9 @@ def get_hparams(init=True):
     name = args.experiment_dir
     experiment_dir = os.path.join("./logs", args.experiment_dir)
 
-    if not os.path.exists(experiment_dir):
-        os.makedirs(experiment_dir)
-
-    if args.version == "v1" or args.sample_rate == "40k":
-        config_path = "configs/v1/%s.json" % args.sample_rate
-    else:
-        config_path = "configs/v2/%s.json" % args.sample_rate
     config_save_path = os.path.join(experiment_dir, "config.json")
-    if init:
-        with open(config_path, "r") as f:
-            data = f.read()
-        with open(config_save_path, "w") as f:
-            f.write(data)
-    else:
-        with open(config_save_path, "r") as f:
-            data = f.read()
-    config = json.loads(data)
+    with open(config_save_path, "r") as f:
+        config = json.load(f)
 
     hparams = HParams(**config)
     hparams.model_dir = hparams.experiment_dir = experiment_dir
@@ -420,7 +409,7 @@ def get_hparams_from_file(config_path):
 def check_git_hash(model_dir):
     source_dir = os.path.dirname(os.path.realpath(__file__))
     if not os.path.exists(os.path.join(source_dir, ".git")):
-        logger.warn(
+        logger.warning(
             "{} is not a git repository, therefore hash value comparison will be ignored.".format(
                 source_dir
             )
@@ -433,7 +422,7 @@ def check_git_hash(model_dir):
     if os.path.exists(path):
         saved_hash = open(path).read()
         if saved_hash != cur_hash:
-            logger.warn(
+            logger.warning(
                 "git hash values are different. {}(saved) != {}(current)".format(
                     saved_hash[:8], cur_hash[:8]
                 )

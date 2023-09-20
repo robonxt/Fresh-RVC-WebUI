@@ -4,6 +4,7 @@
 import os
 import traceback
 import logging
+
 logger = logging.getLogger(__name__)
 
 from multiprocessing import cpu_count
@@ -45,7 +46,7 @@ if big_npy.shape[0] > 2e5:
         )
     except:
         info = traceback.format_exc()
-        logger.warn(info)
+        logger.warning(info)
 
 np.save("tools/infer/big_src_feature_mi.npy", big_npy)
 

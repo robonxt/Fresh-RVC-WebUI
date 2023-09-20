@@ -2,6 +2,17 @@ import pdb, os
 
 import numpy as np
 import torch
+
+try:
+    # Fix "Torch not compiled with CUDA enabled"
+    import intel_extension_for_pytorch as ipex  # pylint: disable=import-error, unused-import
+
+    if torch.xpu.is_available():
+        from infer.modules.ipex import ipex_init
+
+        ipex_init()
+except Exception:
+    pass
 import torch.nn as nn
 import torch.nn.functional as F
 from librosa.util import normalize, pad_center, tiny
@@ -601,7 +612,7 @@ class RMVPE:
         with torch.no_grad():
             n_frames = mel.shape[-1]
             mel = F.pad(
-                mel, (0, 32 * ((n_frames - 1) // 32 + 1) - n_frames), mode="reflect"
+                mel, (0, 32 * ((n_frames - 1) // 32 + 1) - n_frames), mode="constant"
             )
             if "privateuseone" in str(self.device):
                 onnx_input_name = self.model.get_inputs()[0].name
@@ -695,4 +706,4 @@ if __name__ == "__main__":
     # f0 = rmvpe.infer_from_audio(audio, thred=thred)
     # f0 = rmvpe.infer_from_audio(audio, thred=thred)
     t1 = ttime()
-    logger.info(f0.shape, t1 - t0)
+    logger.info("%s %.2f", f0.shape, t1 - t0)

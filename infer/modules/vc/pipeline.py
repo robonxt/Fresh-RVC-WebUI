@@ -2,6 +2,7 @@ import os
 import sys
 import traceback
 import logging
+
 logger = logging.getLogger(__name__)
 
 from functools import lru_cache
@@ -152,10 +153,10 @@ class Pipeline(object):
                 )
             f0 = self.model_rmvpe.infer_from_audio(x, thred=0.03)
 
-        if "privateuseone" in str(self.device):  # clean ortruntime memory
-            del self.model_rmvpe.model
-            del self.model_rmvpe
-            logger.info("Cleaning ortruntime memory")
+            if "privateuseone" in str(self.device):  # clean ortruntime memory
+                del self.model_rmvpe.model
+                del self.model_rmvpe
+                logger.info("Cleaning ortruntime memory")
 
         f0 *= pow(2, f0_up_key / 12)
         # with open("test.txt","w")as f:f.write("\n".join([str(i)for i in f0.tolist()]))
@@ -267,9 +268,7 @@ class Pipeline(object):
         with torch.no_grad():
             hasp = pitch is not None and pitchf is not None
             arg = (feats, p_len, pitch, pitchf, sid) if hasp else (feats, p_len, sid)
-            audio1 = (
-                (net_g.infer(*arg)[0][0, 0]).data.cpu().float().numpy()
-            )
+            audio1 = (net_g.infer(*arg)[0][0, 0]).data.cpu().float().numpy()
             del hasp, arg
         del feats, p_len, padding_mask
         if torch.cuda.is_available():
@@ -363,7 +362,7 @@ class Pipeline(object):
             )
             pitch = pitch[:p_len]
             pitchf = pitchf[:p_len]
-            if self.device == "mps":
+            if "mps" not in str(self.device) or "xpu" not in str(self.device):
                 pitchf = pitchf.astype(np.float32)
             pitch = torch.tensor(pitch, device=self.device).unsqueeze(0).long()
             pitchf = torch.tensor(pitchf, device=self.device).unsqueeze(0).float()

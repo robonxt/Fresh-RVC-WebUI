@@ -2,6 +2,7 @@ import torch
 import torch.utils.data
 from librosa.filters import mel as librosa_mel_fn
 import logging
+
 logger = logging.getLogger(__name__)
 
 MAX_WAV_VALUE = 32768.0
@@ -53,9 +54,9 @@ def spectrogram_torch(y, n_fft, sampling_rate, hop_size, win_size, center=False)
     """
     # Validation
     if torch.min(y) < -1.07:
-        logger.debug("min value is ", torch.min(y))
+        logger.debug("min value is %s", str(torch.min(y)))
     if torch.max(y) > 1.07:
-        logger.debug("max value is ", torch.max(y))
+        logger.debug("max value is %s", str(torch.max(y)))
 
     # Window - Cache if needed
     global hann_window
