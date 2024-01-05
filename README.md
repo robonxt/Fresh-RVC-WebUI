@@ -1,3 +1,5 @@
+# Note: As of January 5, 2024, the new UI in the original RVC has improved. Please use that one until new update here.
+
 # Based off of [RVC-Project/Retrieval-based-Voice-Conversion-WebUI](https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI)
 
 ### Major Changes vs original RVC repo:
